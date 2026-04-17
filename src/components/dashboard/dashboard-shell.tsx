@@ -11,7 +11,7 @@ type DashboardShellProps = {
 const sidebarLinks = [
   { label: "Overview", href: "/dashboard" },
   { label: "Projects", href: "/dashboard" },
-  { label: "Uploads", href: "/dashboard" },
+  { label: "Uploads", href: "/upload" },
   { label: "Shared Files", href: "/dashboard" },
   { label: "Team", href: "/team" },
   { label: "Billing", href: "/dashboard" },
@@ -135,7 +135,9 @@ export function DashboardShell({ children }: DashboardShellProps) {
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 Drop large files, keep everyone aligned, and let auto-expiry handle the cleanup.
               </p>
-              <button className="fc-button-primary mt-4 w-full justify-center">Upload New File</button>
+              <Link className="fc-button-primary mt-4 w-full justify-center" href="/upload">
+                Upload New File
+              </Link>
             </div>
           </div>
         </aside>
@@ -158,7 +160,9 @@ export function DashboardMobileStrip() {
           <path d="m5 7 5 6 5-6H5Z" fill="currentColor" />
         </svg>
       </button>
-      <button className="fc-button-primary min-w-fit whitespace-nowrap px-4">Quick Upload</button>
+      <Link className="fc-button-primary min-w-fit whitespace-nowrap px-4" href="/upload">
+        Quick Upload
+      </Link>
     </div>
   );
 }

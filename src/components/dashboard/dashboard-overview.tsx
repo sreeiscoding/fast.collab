@@ -86,7 +86,9 @@ export function DashboardOverview() {
               </p>
             </div>
 
-            <button className="fc-button-primary h-11 whitespace-nowrap px-5">Quick Upload</button>
+            <Link className="fc-button-primary h-11 whitespace-nowrap px-5" href="/upload">
+              Quick Upload
+            </Link>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -230,7 +232,9 @@ export function DashboardOverview() {
               <span className="h-2 w-2 rounded-full bg-success" />
               2 uploads live
             </span>
-            <button className="fc-button-secondary h-10 px-4">Upload file</button>
+            <Link className="fc-button-secondary h-10 px-4" href="/upload">
+              Upload file
+            </Link>
           </div>
         </div>
 
@@ -339,3 +343,4 @@ export function DashboardOverviewSkeleton() {
     </div>
   );
 }
+import Link from "next/link";
