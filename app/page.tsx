@@ -159,7 +159,7 @@ export default function HomePage() {
               </Link>
               <Link
                 className="fc-button-secondary h-12 px-6 text-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft"
-                href="/login"
+                href="/dashboard"
               >
                 Upload Now
               </Link>
@@ -550,7 +550,7 @@ export default function HomePage() {
               </Link>
               <Link
                 className="fc-button-secondary h-12 px-6 transition-transform duration-200 hover:-translate-y-0.5"
-                href="/login"
+                href="/dashboard"
               >
                 Upload Now
               </Link>
