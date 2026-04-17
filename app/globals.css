@@ -1,0 +1,225 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+
+  --color-canvas: 248 250 252;
+  --color-surface: 255 255 255;
+  --color-surface-raised: 255 255 255;
+  --color-border: 226 232 240;
+  --color-border-strong: 203 213 225;
+  --color-foreground: 15 23 42;
+  --color-muted: 241 245 249;
+  --color-muted-foreground: 100 116 139;
+  --color-primary: 37 99 235;
+  --color-primary-foreground: 248 250 252;
+  --color-primary-subtle: 219 234 254;
+  --color-secondary: 15 23 42;
+  --color-secondary-foreground: 248 250 252;
+  --color-secondary-subtle: 226 232 240;
+  --color-accent: 8 145 178;
+  --color-accent-foreground: 240 249 255;
+  --color-accent-subtle: 207 250 254;
+  --color-success: 22 163 74;
+  --color-success-foreground: 240 253 244;
+  --color-success-subtle: 220 252 231;
+  --color-warning: 217 119 6;
+  --color-warning-foreground: 255 251 235;
+  --color-warning-subtle: 254 243 199;
+  --color-error: 220 38 38;
+  --color-error-foreground: 254 242 242;
+  --color-error-subtle: 254 226 226;
+  --color-ring: 59 130 246;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --color-canvas: 2 6 23;
+  --color-surface: 15 23 42;
+  --color-surface-raised: 17 24 39;
+  --color-border: 30 41 59;
+  --color-border-strong: 51 65 85;
+  --color-foreground: 241 245 249;
+  --color-muted: 15 23 42;
+  --color-muted-foreground: 148 163 184;
+  --color-primary: 96 165 250;
+  --color-primary-foreground: 2 6 23;
+  --color-primary-subtle: 30 41 59;
+  --color-secondary: 226 232 240;
+  --color-secondary-foreground: 2 6 23;
+  --color-secondary-subtle: 30 41 59;
+  --color-accent: 34 211 238;
+  --color-accent-foreground: 8 47 73;
+  --color-accent-subtle: 22 78 99;
+  --color-success: 74 222 128;
+  --color-success-foreground: 20 83 45;
+  --color-success-subtle: 20 83 45;
+  --color-warning: 251 191 36;
+  --color-warning-foreground: 120 53 15;
+  --color-warning-subtle: 120 53 15;
+  --color-error: 248 113 113;
+  --color-error-foreground: 127 29 29;
+  --color-error-subtle: 127 29 29;
+  --color-ring: 96 165 250;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  h1 {
+    @apply text-4xl font-semibold tracking-tight text-foreground md:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl font-semibold tracking-tight text-foreground md:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl font-semibold tracking-tight text-foreground;
+  }
+
+  h4 {
+    @apply text-xl font-semibold tracking-tight text-foreground;
+  }
+
+  p {
+    @apply text-base leading-7 text-foreground;
+  }
+}
+
+@layer components {
+  .fc-shell {
+    @apply min-h-screen bg-canvas;
+  }
+
+  .fc-navbar {
+    @apply sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-xl;
+  }
+
+  .fc-sidebar {
+    @apply flex h-full w-72 flex-col border-r border-border bg-surface;
+  }
+
+  .fc-card {
+    @apply rounded-2xl border border-border bg-surface p-6 shadow-soft;
+  }
+
+  .fc-card-elevated {
+    @apply rounded-2xl border border-border bg-surface-raised p-6 shadow-medium;
+  }
+
+  .fc-section {
+    @apply rounded-3xl border border-border/80 bg-surface px-6 py-8 shadow-soft md:px-8;
+  }
+
+  .fc-button {
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .fc-button-primary {
+    @apply fc-button bg-primary text-primary-foreground shadow-sm hover:bg-primary/90;
+  }
+
+  .fc-button-secondary {
+    @apply fc-button border border-border bg-surface text-foreground hover:bg-muted;
+  }
+
+  .fc-button-ghost {
+    @apply fc-button text-muted-foreground hover:bg-muted hover:text-foreground;
+  }
+
+  .fc-button-danger {
+    @apply fc-button bg-error text-error-foreground hover:bg-error/90;
+  }
+
+  .fc-button-loading {
+    @apply relative text-transparent;
+  }
+
+  .fc-input {
+    @apply flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground shadow-sm transition-colors duration-200 placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15;
+  }
+
+  .fc-input-success {
+    @apply border-success focus:border-success focus:ring-success/15;
+  }
+
+  .fc-input-error {
+    @apply border-error focus:border-error focus:ring-error/15;
+  }
+
+  .fc-badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  .fc-badge-neutral {
+    @apply fc-badge bg-muted text-muted-foreground;
+  }
+
+  .fc-badge-success {
+    @apply fc-badge bg-success-subtle text-success;
+  }
+
+  .fc-badge-warning {
+    @apply fc-badge bg-warning-subtle text-warning;
+  }
+
+  .fc-badge-error {
+    @apply fc-badge bg-error-subtle text-error;
+  }
+
+  .fc-tag {
+    @apply inline-flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground;
+  }
+
+  .fc-avatar {
+    @apply inline-flex items-center justify-center rounded-full bg-primary-subtle font-medium text-primary;
+  }
+
+  .fc-skeleton {
+    @apply relative overflow-hidden rounded-xl bg-muted;
+  }
+
+  .fc-skeleton::after {
+    content: "";
+    @apply absolute inset-0 animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.45) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  .dark .fc-skeleton::after {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.08) 50%,
+      transparent 100%
+    );
+  }
+
+  .fc-progress {
+    @apply h-2 w-full overflow-hidden rounded-full bg-muted;
+  }
+
+  .fc-progress-bar {
+    @apply h-full rounded-full bg-primary transition-all duration-300 ease-out;
+  }
+}
