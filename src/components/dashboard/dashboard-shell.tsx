@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 type DashboardShellProps = {
@@ -6,17 +9,19 @@ type DashboardShellProps = {
 };
 
 const sidebarLinks = [
-  { label: "Overview", active: true },
-  { label: "Projects", active: false },
-  { label: "Uploads", active: false },
-  { label: "Shared Files", active: false },
-  { label: "Team", active: false },
-  { label: "Billing", active: false },
+  { label: "Overview", href: "/dashboard" },
+  { label: "Projects", href: "/dashboard" },
+  { label: "Uploads", href: "/dashboard" },
+  { label: "Shared Files", href: "/dashboard" },
+  { label: "Team", href: "/team" },
+  { label: "Billing", href: "/dashboard" },
 ];
 
 const teamOptions = ["Studio Team", "Northwind Ops", "Client Review"];
 
 export function DashboardShell({ children }: DashboardShellProps) {
+  const pathname = usePathname();
+
   return (
     <div className="min-h-screen bg-canvas">
       <header className="fc-navbar sticky top-0 z-50 w-full">
@@ -111,16 +116,17 @@ export function DashboardShell({ children }: DashboardShellProps) {
 
             <nav className="mt-6 space-y-1">
               {sidebarLinks.map((link) => (
-                <div
+                <Link
+                  href={link.href}
                   key={link.label}
                   className={`rounded-2xl px-4 py-3 text-sm transition-all ${
-                    link.active
+                    pathname === link.href
                       ? "bg-primary-subtle font-medium text-primary shadow-soft"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                   }`}
                 >
                   {link.label}
-                </div>
+                </Link>
               ))}
             </nav>
 

@@ -596,30 +596,30 @@ export default function HomePage() {
           <div>
             <p className="text-sm font-semibold">Company</p>
             <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <a className="block transition-colors hover:text-foreground" href="/">
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 About
-              </a>
-              <a className="block transition-colors hover:text-foreground" href="/">
+              </Link>
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 Security
-              </a>
-              <a className="block transition-colors hover:text-foreground" href="/">
+              </Link>
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 Contact
-              </a>
+              </Link>
             </div>
           </div>
 
           <div>
             <p className="text-sm font-semibold">Legal</p>
             <div className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <a className="block transition-colors hover:text-foreground" href="/">
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 Privacy
-              </a>
-              <a className="block transition-colors hover:text-foreground" href="/">
+              </Link>
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 Terms
-              </a>
-              <a className="block transition-colors hover:text-foreground" href="/">
+              </Link>
+              <Link className="block transition-colors hover:text-foreground" href="/">
                 Cookies
-              </a>
+              </Link>
             </div>
           </div>
         </div>
