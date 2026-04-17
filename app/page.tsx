@@ -121,8 +121,12 @@ export default function HomePage() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <button className="fc-button-ghost hidden sm:inline-flex">Sign in</button>
-            <button className="fc-button-primary shadow-soft">Start Free</button>
+            <Link className="fc-button-ghost hidden sm:inline-flex" href="/login">
+              Sign in
+            </Link>
+            <Link className="fc-button-primary shadow-soft" href="/signup">
+              Start Free
+            </Link>
           </div>
         </div>
       </header>
@@ -147,12 +151,18 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <button className="fc-button-primary h-12 px-6 text-sm shadow-medium transition-transform duration-200 hover:-translate-y-0.5">
+              <Link
+                className="fc-button-primary h-12 px-6 text-sm shadow-medium transition-transform duration-200 hover:-translate-y-0.5"
+                href="/signup"
+              >
                 Start Free
-              </button>
-              <button className="fc-button-secondary h-12 px-6 text-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft">
+              </Link>
+              <Link
+                className="fc-button-secondary h-12 px-6 text-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft"
+                href="/login"
+              >
                 Upload Now
-              </button>
+              </Link>
             </div>
 
             <div className="mt-8 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
@@ -532,12 +542,18 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
-              <button className="fc-button-primary h-12 px-6 shadow-soft transition-transform duration-200 hover:-translate-y-0.5">
+              <Link
+                className="fc-button-primary h-12 px-6 shadow-soft transition-transform duration-200 hover:-translate-y-0.5"
+                href="/signup"
+              >
                 Start Free
-              </button>
-              <button className="fc-button-secondary h-12 px-6 transition-transform duration-200 hover:-translate-y-0.5">
+              </Link>
+              <Link
+                className="fc-button-secondary h-12 px-6 transition-transform duration-200 hover:-translate-y-0.5"
+                href="/login"
+              >
                 Upload Now
-              </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -611,3 +627,4 @@ export default function HomePage() {
     </main>
   );
 }
+import Link from "next/link";
