@@ -105,7 +105,9 @@ function UploadSurface({ compact = false, onClose }: UploadSurfaceProps) {
   return (
     <div
       className={`rounded-[32px] border border-border bg-surface shadow-large ${
-        compact ? "p-5 sm:p-6" : "p-6 sm:p-8"
+        compact
+          ? "fc-scrollbar-none max-h-[calc(100dvh-2rem)] overflow-y-auto p-5 sm:p-6"
+          : "p-6 sm:p-8"
       }`}
     >
       <div className="flex items-start justify-between gap-4">
@@ -330,7 +332,7 @@ export function UploadExperiencePage() {
       </div>
 
       {modalOpen ? (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/35 p-4 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/35 p-3 backdrop-blur-sm sm:p-4">
           <div className="w-full max-w-4xl">
             <UploadSurface compact onClose={() => setModalOpen(false)} />
           </div>

@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const features = [
   {
     title: "Fast uploads",
@@ -251,7 +253,9 @@ export default function HomePage() {
                         Expiring automatically in 7 days
                       </p>
                     </div>
-                    <button className="fc-button-ghost h-9 px-3 text-xs">View all</button>
+                    <Link className="fc-button-ghost h-9 px-3 text-xs" href="/files">
+                      View all
+                    </Link>
                   </div>
 
                   <div className="mt-4 space-y-3">
@@ -482,13 +486,14 @@ export default function HomePage() {
                   </div>
                 ))}
               </div>
-              <button
+              <Link
                 className={`mt-8 w-full ${
                   plan.featured ? "fc-button-primary" : "fc-button-secondary"
                 }`}
+                href={plan.name === "Scale" ? "/pricing" : "/signup"}
               >
                 {plan.cta}
-              </button>
+              </Link>
             </div>
           ))}
         </div>
@@ -627,4 +632,3 @@ export default function HomePage() {
     </main>
   );
 }
-import Link from "next/link";

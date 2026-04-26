@@ -91,9 +91,25 @@ const config: Config = {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
         },
+        "fade-up": {
+          "0%": { opacity: "0", transform: "translateY(8px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "success-pop": {
+          "0%": { opacity: "0.78", transform: "scale(0.96)" },
+          "60%": { opacity: "1", transform: "scale(1.03)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1", transform: "scale(1)" },
+          "50%": { opacity: "0.72", transform: "scale(0.94)" },
+        },
       },
       animation: {
         shimmer: "shimmer 1.8s linear infinite",
+        "fade-up": "fade-up 320ms ease-out",
+        "success-pop": "success-pop 280ms ease-out",
+        "pulse-soft": "pulse-soft 1.8s ease-in-out infinite",
       },
     },
   },

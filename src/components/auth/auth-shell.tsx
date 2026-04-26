@@ -20,12 +20,15 @@ type AuthAlertProps = {
 type SocialButtonProps = {
   label: string;
   loading?: boolean;
+  onClick?: () => void;
+  disabled?: boolean;
 };
 
 type AuthSubmitButtonProps = {
   label: string;
   loadingLabel?: string;
   loading?: boolean;
+  disabled?: boolean;
 };
 
 export function AuthShell({
@@ -131,10 +134,17 @@ export function AuthAlert({
   );
 }
 
-export function SocialButton({ label, loading = false }: SocialButtonProps) {
+export function SocialButton({
+  label,
+  loading = false,
+  onClick,
+  disabled = false,
+}: SocialButtonProps) {
   return (
     <button
       className="fc-button-secondary h-11 w-full justify-center gap-3 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft"
+      disabled={disabled}
+      onClick={onClick}
       type="button"
     >
       <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 24 24">
@@ -164,10 +174,12 @@ export function AuthSubmitButton({
   label,
   loadingLabel = "Sending link...",
   loading = false,
+  disabled = false,
 }: AuthSubmitButtonProps) {
   return (
     <button
       className="fc-button-primary h-11 w-full justify-center gap-2 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-medium"
+      disabled={disabled}
       type="submit"
     >
       {loading ? (

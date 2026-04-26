@@ -53,11 +53,23 @@ const initialMembers: TeamMember[] = [
 
 const roles: TeamMember["role"][] = ["Owner", "Editor", "Viewer"];
 
+const roleDetails: Record<TeamMember["role"], string> = {
+  Owner: "Full control over billing, members, and workspace settings.",
+  Editor: "Can upload, organize, and collaborate on shared media.",
+  Viewer: "Can review and download shared files without editing.",
+};
+
+type RolePickerTarget =
+  | { scope: "invite" }
+  | { scope: "member"; memberId: string };
+
 export function TeamManagement() {
   const [members, setMembers] = useState(initialMembers);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamMember["role"]>("Viewer");
+  const [rolePickerTarget, setRolePickerTarget] = useState<RolePickerTarget | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Role changes sync live across the workspace.");
 
   const summary = useMemo(() => {
     const owners = members.filter((member) => member.role === "Owner").length;
@@ -73,10 +85,13 @@ export function TeamManagement() {
     setMembers((current) =>
       current.map((member) => (member.id === memberId ? { ...member, role } : member)),
     );
+    const memberName = members.find((member) => member.id === memberId)?.name ?? "Member";
+    setStatusMessage(`${memberName} role updated to ${role}.`);
   }
 
   function handleRemove(memberId: string) {
     setMembers((current) => current.filter((member) => member.id !== memberId));
+    setStatusMessage("Member access removed.");
   }
 
   function handleInviteSubmit() {
@@ -107,7 +122,59 @@ export function TeamManagement() {
     setInviteEmail("");
     setInviteRole("Viewer");
     setInviteOpen(false);
+    setStatusMessage(`Invite sent to ${email}.`);
   }
+
+  function handleExportList() {
+    const rows = [
+      ["Name", "Email", "Role", "Status", "Last active"].join(","),
+      ...members.map((member) =>
+        [member.name, member.email, member.role, member.status, member.lastActive].join(","),
+      ),
+    ].join("\n");
+
+    const blob = new Blob([rows], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+
+    anchor.href = url;
+    anchor.download = "fastcollab-team-members.csv";
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    URL.revokeObjectURL(url);
+    setStatusMessage("Member list exported.");
+  }
+
+  function handleEdit(member: TeamMember) {
+    setInviteEmail(member.email);
+    setInviteRole(member.role);
+    setInviteOpen(true);
+    setStatusMessage(`Editing permissions for ${member.name}.`);
+  }
+
+  function handleOpenRolePicker(target: RolePickerTarget) {
+    setRolePickerTarget(target);
+  }
+
+  function handleSelectRole(role: TeamMember["role"]) {
+    if (!rolePickerTarget) return;
+
+    if (rolePickerTarget.scope === "invite") {
+      setInviteRole(role);
+      setStatusMessage(`Invite role set to ${role}.`);
+      setRolePickerTarget(null);
+      return;
+    }
+
+    handleRoleChange(rolePickerTarget.memberId, role);
+    setRolePickerTarget(null);
+  }
+
+  const activeRole =
+    rolePickerTarget?.scope === "invite"
+      ? inviteRole
+      : members.find((member) => member.id === rolePickerTarget?.memberId)?.role ?? "Viewer";
 
   return (
     <>
@@ -169,7 +236,7 @@ export function TeamManagement() {
             <div className="mt-6 space-y-3">
               {[
                 "Invite new teammates with email and assign a role before sending.",
-                "Change permissions inline with the role dropdown in the member table.",
+                "Change permissions inline with the role drawer in the member table.",
                 "Remove access instantly without leaving the page.",
               ].map((item) => (
                 <div key={item} className="rounded-2xl bg-muted/70 px-4 py-3 text-sm leading-6 text-muted-foreground">
@@ -189,6 +256,10 @@ export function TeamManagement() {
                 Invites appear immediately in the member list with a visible pending state, so owners can track access at a glance.
               </p>
             </div>
+
+            <div className="mt-4 rounded-2xl border border-success/20 bg-success-subtle px-4 py-3 text-sm text-success">
+              {statusMessage}
+            </div>
           </div>
         </section>
 
@@ -202,7 +273,9 @@ export function TeamManagement() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="fc-button-secondary h-10 px-4">Export list</button>
+              <button className="fc-button-secondary h-10 px-4" onClick={handleExportList} type="button">
+                Export list
+              </button>
               <button className="fc-button-primary h-10 px-4" onClick={() => setInviteOpen(true)} type="button">
                 Invite member
               </button>
@@ -236,27 +309,26 @@ export function TeamManagement() {
                     <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground lg:hidden">
                       Role
                     </p>
-                    <div className="relative">
-                      <select
-                        className="fc-input h-10 appearance-none pr-10"
-                        onChange={(event) =>
-                          handleRoleChange(member.id, event.target.value as TeamMember["role"])
+                    <div>
+                      <button
+                        aria-expanded={
+                          rolePickerTarget?.scope === "member" &&
+                          rolePickerTarget.memberId === member.id
                         }
-                        value={member.role}
+                        aria-haspopup="dialog"
+                        className="fc-input h-10 items-center justify-between"
+                        onClick={() => handleOpenRolePicker({ scope: "member", memberId: member.id })}
+                        type="button"
                       >
-                        {roles.map((role) => (
-                          <option key={role} value={role}>
-                            {role}
-                          </option>
-                        ))}
-                      </select>
-                      <svg
-                        aria-hidden="true"
-                        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-                        viewBox="0 0 20 20"
-                      >
-                        <path d="m5 7 5 6 5-6H5Z" fill="currentColor" />
-                      </svg>
+                        <span className="text-sm text-foreground">{member.role}</span>
+                        <svg
+                          aria-hidden="true"
+                          className="h-4 w-4 text-muted-foreground"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="m5 7 5 6 5-6H5Z" fill="currentColor" />
+                        </svg>
+                      </button>
                     </div>
                   </div>
 
@@ -277,7 +349,11 @@ export function TeamManagement() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button className="fc-button-ghost h-9 px-3 text-xs" type="button">
+                    <button
+                      className="fc-button-ghost h-9 px-3 text-xs"
+                      onClick={() => handleEdit(member)}
+                      type="button"
+                    >
                       Edit
                     </button>
                     <button
@@ -336,30 +412,26 @@ export function TeamManagement() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground" htmlFor="invite-role">
+                <label className="text-sm font-medium text-foreground" htmlFor="invite-role-trigger">
                   Role assignment
                 </label>
-                <div className="relative">
-                  <select
-                    className="fc-input appearance-none pr-10"
-                    id="invite-role"
-                    onChange={(event) => setInviteRole(event.target.value as TeamMember["role"])}
-                    value={inviteRole}
-                  >
-                    {roles.map((role) => (
-                      <option key={role} value={role}>
-                        {role}
-                      </option>
-                    ))}
-                  </select>
+                <button
+                  aria-expanded={rolePickerTarget?.scope === "invite"}
+                  aria-haspopup="dialog"
+                  className="fc-input items-center justify-between"
+                  id="invite-role-trigger"
+                  onClick={() => handleOpenRolePicker({ scope: "invite" })}
+                  type="button"
+                >
+                  <span className="text-sm text-foreground">{inviteRole}</span>
                   <svg
                     aria-hidden="true"
-                    className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+                    className="h-4 w-4 text-muted-foreground"
                     viewBox="0 0 20 20"
                   >
                     <path d="m5 7 5 6 5-6H5Z" fill="currentColor" />
                   </svg>
-                </div>
+                </button>
               </div>
 
               <div className="rounded-2xl border border-border bg-muted/60 px-4 py-3">
@@ -384,6 +456,77 @@ export function TeamManagement() {
               </button>
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {rolePickerTarget ? (
+        <div className="fixed inset-0 z-[70] bg-slate-950/35 backdrop-blur-sm">
+          <div
+            className="absolute inset-0"
+            onClick={() => setRolePickerTarget(null)}
+            role="button"
+            tabIndex={-1}
+          />
+          <aside className="absolute right-0 top-0 h-full w-full max-w-[430px] border-l border-border bg-surface shadow-large">
+            <div className="flex h-full flex-col">
+              <div className="border-b border-border px-5 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-[0.14em] text-primary">Role Picker</p>
+                    <h2 className="mt-2 text-xl font-semibold text-foreground">
+                      Select access level
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Choose how much control this member should have in FastCollab.
+                    </p>
+                  </div>
+                  <button
+                    className="fc-button-ghost h-10 w-10 p-0"
+                    onClick={() => setRolePickerTarget(null)}
+                    type="button"
+                  >
+                    <span className="sr-only">Close role picker</span>
+                    <svg aria-hidden="true" className="h-5 w-5 text-foreground" viewBox="0 0 20 20">
+                      <path
+                        d="m5.28 6.34 1.06-1.06L10 8.94l3.66-3.66 1.06 1.06L11.06 10l3.66 3.66-1.06 1.06L10 11.06l-3.66 3.66-1.06-1.06L8.94 10 5.28 6.34Z"
+                        fill="currentColor"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex-1 space-y-3 overflow-y-auto p-5">
+                {roles.map((role) => {
+                  const isActive = activeRole === role;
+                  return (
+                    <button
+                      key={role}
+                      className={`w-full rounded-2xl border px-4 py-4 text-left transition-all ${
+                        isActive
+                          ? "border-primary/30 bg-primary-subtle shadow-soft"
+                          : "border-border bg-canvas hover:border-border-strong hover:bg-surface"
+                      }`}
+                      onClick={() => handleSelectRole(role)}
+                      type="button"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className={`text-sm font-semibold ${isActive ? "text-primary" : "text-foreground"}`}>
+                            {role}
+                          </p>
+                          <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                            {roleDetails[role]}
+                          </p>
+                        </div>
+                        {isActive ? <span className="fc-badge-success">Current</span> : null}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </aside>
         </div>
       ) : null}
     </>

@@ -32,6 +32,9 @@
   --color-error-foreground: 254 242 242;
   --color-error-subtle: 254 226 226;
   --color-ring: 59 130 246;
+  --gradient-hero: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 34%),
+    radial-gradient(circle at top right, rgba(8, 145, 178, 0.14), transparent 30%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.76));
 }
 
 .dark {
@@ -64,6 +67,9 @@
   --color-error-foreground: 127 29 29;
   --color-error-subtle: 127 29 29;
   --color-ring: 96 165 250;
+  --gradient-hero: radial-gradient(circle at top left, rgba(96, 165, 250, 0.14), transparent 34%),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 30%),
+    linear-gradient(180deg, rgba(2, 6, 23, 0.96), rgba(2, 6, 23, 0.82));
 }
 
 @layer base {
@@ -76,8 +82,26 @@
   }
 
   body {
-    @apply bg-canvas font-sans text-foreground antialiased;
+    @apply bg-canvas font-sans text-foreground antialiased transition-colors duration-300;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-image: linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.52),
+        rgba(255, 255, 255, 0)
+      ),
+      radial-gradient(circle at top, rgba(59, 130, 246, 0.06), transparent 28%);
+  }
+
+  ::selection {
+    @apply bg-primary/20 text-foreground;
+  }
+
+  button,
+  input,
+  select,
+  textarea,
+  a {
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1 {
@@ -103,47 +127,48 @@
 
 @layer components {
   .fc-shell {
-    @apply min-h-screen bg-canvas;
+    @apply min-h-screen bg-canvas animate-fade-up;
   }
 
   .fc-navbar {
-    @apply sticky top-0 z-40 border-b border-border/80 bg-surface/90 backdrop-blur-xl;
+    @apply sticky top-0 z-40 border-b border-border/80 bg-surface shadow-[0_1px_0_rgba(15,23,42,0.04)] backdrop-blur-xl transition-colors duration-300;
   }
 
   .fc-sidebar {
-    @apply flex h-full w-72 flex-col border-r border-border bg-surface;
+    @apply flex h-full w-72 flex-col border-r border-border bg-surface transition-colors duration-300;
   }
 
   .fc-card {
-    @apply rounded-2xl border border-border bg-surface p-6 shadow-soft;
+    @apply rounded-2xl border border-border bg-surface p-6 shadow-soft transition-all duration-200;
   }
 
   .fc-card-elevated {
-    @apply rounded-2xl border border-border bg-surface-raised p-6 shadow-medium;
+    @apply rounded-2xl border border-border bg-surface-raised p-6 shadow-medium transition-all duration-200;
   }
 
   .fc-section {
-    @apply rounded-3xl border border-border/80 bg-surface px-6 py-8 shadow-soft md:px-8;
+    @apply rounded-3xl border border-border/80 bg-surface px-6 py-8 shadow-soft transition-all duration-200 md:px-8;
   }
 
   .fc-button {
-    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex h-10 items-center justify-center gap-2 rounded-xl px-4 text-sm font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:pointer-events-none disabled:opacity-50;
+    transform: translateZ(0);
   }
 
   .fc-button-primary {
-    @apply fc-button bg-primary text-primary-foreground shadow-sm hover:bg-primary/90;
+    @apply fc-button bg-primary text-primary-foreground shadow-sm hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-medium active:translate-y-0 active:shadow-soft;
   }
 
   .fc-button-secondary {
-    @apply fc-button border border-border bg-surface text-foreground hover:bg-muted;
+    @apply fc-button border border-border bg-surface text-foreground hover:-translate-y-0.5 hover:border-border-strong hover:bg-muted hover:shadow-soft active:translate-y-0;
   }
 
   .fc-button-ghost {
-    @apply fc-button text-muted-foreground hover:bg-muted hover:text-foreground;
+    @apply fc-button text-muted-foreground hover:bg-muted hover:text-foreground active:scale-[0.98];
   }
 
   .fc-button-danger {
-    @apply fc-button bg-error text-error-foreground hover:bg-error/90;
+    @apply fc-button bg-error text-error-foreground shadow-sm hover:-translate-y-0.5 hover:bg-error/90 hover:shadow-medium active:translate-y-0;
   }
 
   .fc-button-loading {
@@ -151,7 +176,7 @@
   }
 
   .fc-input {
-    @apply flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground shadow-sm transition-colors duration-200 placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15;
+    @apply flex h-11 w-full rounded-xl border border-border bg-surface px-4 text-sm text-foreground shadow-sm transition-all duration-200 placeholder:text-muted-foreground focus:border-ring focus:outline-none focus:ring-4 focus:ring-ring/15 focus:shadow-soft;
   }
 
   .fc-input-success {
@@ -163,7 +188,7 @@
   }
 
   .fc-badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium transition-colors duration-200;
   }
 
   .fc-badge-neutral {
@@ -183,15 +208,15 @@
   }
 
   .fc-tag {
-    @apply inline-flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground;
+    @apply inline-flex items-center rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground transition-all duration-200 hover:border-border-strong hover:bg-muted;
   }
 
   .fc-avatar {
-    @apply inline-flex items-center justify-center rounded-full bg-primary-subtle font-medium text-primary;
+    @apply inline-flex items-center justify-center rounded-full bg-primary-subtle font-medium text-primary ring-1 ring-primary/10 transition-transform duration-200;
   }
 
   .fc-skeleton {
-    @apply relative overflow-hidden rounded-xl bg-muted;
+    @apply relative overflow-hidden rounded-xl bg-muted/90;
   }
 
   .fc-skeleton::after {
@@ -216,10 +241,56 @@
   }
 
   .fc-progress {
-    @apply h-2 w-full overflow-hidden rounded-full bg-muted;
+    @apply h-2 w-full overflow-hidden rounded-full bg-muted/90;
   }
 
   .fc-progress-bar {
-    @apply h-full rounded-full bg-primary transition-all duration-300 ease-out;
+    @apply h-full rounded-full bg-primary transition-all duration-500 ease-out;
+  }
+
+  .fc-interactive-surface {
+    @apply transition-all duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-medium;
+  }
+
+  .fc-gradient-panel {
+    background-image: var(--gradient-hero);
+  }
+
+  .fc-focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-canvas;
+  }
+
+  .fc-success-pop {
+    @apply animate-success-pop;
+  }
+
+  .fc-live-dot {
+    @apply inline-block h-2.5 w-2.5 rounded-full bg-success animate-pulse-soft;
+  }
+
+  .fc-empty-state {
+    @apply rounded-[28px] border border-dashed border-border bg-canvas/80 px-6 py-10 text-center shadow-soft;
+  }
+}
+
+@layer utilities {
+  .fc-scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .fc-scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

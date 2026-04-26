@@ -1,73 +1,53 @@
-const stats = [
-  { label: "Active projects", value: "12", tone: "text-foreground", meta: "+3 this week" },
-  { label: "Files expiring soon", value: "27", tone: "text-warning", meta: "Next 24 hours" },
-  { label: "Uploads in progress", value: "4", tone: "text-primary", meta: "2 live right now" },
-  { label: "Team response rate", value: "98%", tone: "text-success", meta: "Realtime sync healthy" },
-];
-
-const projects = [
-  {
-    name: "Spring Campaign Launch",
-    team: "Marketing Studio",
-    progress: 78,
-    uploads: "14 files",
-    expiry: "3 assets expire in 2 days",
-    live: true,
-  },
-  {
-    name: "Investor Demo Edit",
-    team: "Product Ops",
-    progress: 54,
-    uploads: "7 files",
-    expiry: "1 asset expires in 18 hours",
-    live: false,
-  },
-  {
-    name: "Client Review Package",
-    team: "External Share",
-    progress: 91,
-    uploads: "22 files",
-    expiry: "5 assets expire in 5 days",
-    live: true,
-  },
-];
-
-const uploads = [
-  {
-    name: "Campaign_Master_v12.mp4",
-    size: "4.8 GB",
-    status: "Uploading",
-    statusTone: "fc-badge-neutral",
-    progress: 76,
-    expiry: "Expires in 6d 18h",
-  },
-  {
-    name: "Launch_Selects_Press.zip",
-    size: "1.3 GB",
-    status: "Shared",
-    statusTone: "fc-badge-success",
-    progress: 100,
-    expiry: "Expires in 2d 04h",
-  },
-  {
-    name: "Storyboard_Review_03.pdf",
-    size: "42 MB",
-    status: "Needs review",
-    statusTone: "fc-badge-warning",
-    progress: 100,
-    expiry: "Expires in 14h",
-  },
-  {
-    name: "Raw_Footage_Selects.tar",
-    size: "8.2 GB",
-    status: "Queued",
-    statusTone: "fc-badge-neutral",
-    progress: 28,
-    expiry: "Expires in 6d 23h",
-  },
-];
+import Link from "next/link";
+import { useMemo } from "react";
+import { useAppData } from "@/src/context/AppDataContext";
+import { useTeam } from "@/src/context/TeamContext";
 
 export function DashboardOverview() {
+  const { activeTeamId } = useTeam();
+  const { files, notifications, projects, uploads } = useAppData();
+
+  const teamFiles = useMemo(
+    () => files.filter((file) => file.teamId === activeTeamId),
+    [activeTeamId, files],
+  );
+  const teamProjects = useMemo(
+    () => projects.filter((project) => project.teamId === activeTeamId),
+    [activeTeamId, projects],
+  );
+  const teamUploads = useMemo(
+    () => uploads.filter((upload) => upload.teamId === activeTeamId),
+    [activeTeamId, uploads],
+  );
+  const teamNotifications = useMemo(
+    () => notifications.filter((notification) => notification.teamId === activeTeamId),
+    [activeTeamId, notifications],
+  );
+
+  const expiringSoonCount = teamFiles.filter((file) => file.daysRemaining <= 1).length;
+  const uploadsInProgressCount = teamUploads.filter((upload) => upload.status === "uploading").length;
+
+  const stats = [
+    { label: "Active projects", value: String(teamProjects.length), tone: "text-foreground", meta: "Across current team" },
+    { label: "Files expiring soon", value: String(expiringSoonCount), tone: "text-warning", meta: "Next 24 hours" },
+    { label: "Uploads in progress", value: String(uploadsInProgressCount), tone: "text-primary", meta: "Live transfer queue" },
+    { label: "Team response rate", value: "98%", tone: "text-success", meta: "Realtime sync healthy" },
+  ];
+
+  const recentUploads = teamUploads.slice(0, 4).map((upload) => ({
+    name: upload.name,
+    size: upload.size,
+    status: upload.status === "success" ? "Shared" : upload.status === "error" ? "Needs review" : "Uploading",
+    statusTone:
+      upload.status === "success"
+        ? "fc-badge-success"
+        : upload.status === "error"
+          ? "fc-badge-warning"
+          : "fc-badge-neutral",
+    progress: upload.progress,
+    expiry: "Expires in 7 days",
+  }));
+
   return (
     <div className="space-y-6 lg:space-y-8">
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
@@ -86,7 +66,13 @@ export function DashboardOverview() {
               </p>
             </div>
 
-            <Link className="fc-button-primary h-11 whitespace-nowrap px-5" href="/upload">
+            <Link className="fc-button-primary inline-flex h-11 items-center gap-2 whitespace-nowrap px-5" href="/upload">
+              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 20 20">
+                <path
+                  d="M10 3.25a.75.75 0 0 1 .75.75v7.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 0 1 1.06-1.06l2.22 2.22V4a.75.75 0 0 1 .75-.75Z"
+                  fill="currentColor"
+                />
+              </svg>
               Quick Upload
             </Link>
           </div>
@@ -107,7 +93,13 @@ export function DashboardOverview() {
         <div className="fc-card space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 20 20">
+                  <path
+                    d="M3.75 10a6.25 6.25 0 1 1 12.5 0A6.25 6.25 0 0 1 3.75 10Zm7-3a.75.75 0 0 0-1.5 0v3.4c0 .2.08.39.22.53l1.9 1.9a.75.75 0 0 0 1.06-1.06l-1.68-1.67V7Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 Live Signals
               </p>
               <h2 className="mt-2 text-xl font-semibold text-foreground">Team pulse</h2>
@@ -116,13 +108,9 @@ export function DashboardOverview() {
           </div>
 
           <div className="space-y-3">
-            {[
-              "Maya started uploading a 4.8 GB campaign master",
-              "Jordan opened Client Review Package",
-              "2 assets enter expiry window in under 24 hours",
-            ].map((item) => (
+            {teamNotifications.slice(0, 3).map((item) => (
               <div key={item} className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
-                {item}
+                {item.title}
               </div>
             ))}
           </div>
@@ -146,18 +134,26 @@ export function DashboardOverview() {
         <div className="fc-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 20 20">
+                  <path
+                    d="M4.5 4.25A1.75 1.75 0 0 0 2.75 6v8A1.75 1.75 0 0 0 4.5 15.75h11A1.75 1.75 0 0 0 17.25 14V6A1.75 1.75 0 0 0 15.5 4.25h-11Zm1 3h9v1.5h-9v-1.5Zm0 3h6v1.5h-6v-1.5Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 Active Projects
               </p>
               <h2 className="mt-2 text-xl font-semibold text-foreground">Projects in motion</h2>
             </div>
-            <button className="fc-button-ghost h-9 px-3 text-xs">View all</button>
+            <Link className="fc-button-ghost h-9 px-3 text-xs" href="/projects">
+              View all
+            </Link>
           </div>
 
           <div className="mt-6 grid gap-4 xl:grid-cols-3">
-            {projects.map((project) => (
+            {teamProjects.map((project) => (
               <div
-                key={project.name}
+                key={project.id}
                 className="rounded-[24px] border border-border bg-surface p-5 shadow-soft transition-all duration-200 hover:-translate-y-1 hover:border-border-strong hover:shadow-medium"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -188,7 +184,13 @@ export function DashboardOverview() {
         <div className="fc-card">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 20 20">
+                  <path
+                    d="M10 3.5a6.5 6.5 0 1 0 6.5 6.5A6.5 6.5 0 0 0 10 3.5Zm.75 3.25a.75.75 0 0 0-1.5 0v3.56c0 .2.08.39.22.53l2 2a.75.75 0 0 0 1.06-1.06l-1.78-1.78V6.75Z"
+                    fill="currentColor"
+                  />
+                </svg>
                 Expiry Countdown
               </p>
               <h2 className="mt-2 text-xl font-semibold text-foreground">Most urgent assets</h2>
@@ -197,15 +199,26 @@ export function DashboardOverview() {
           </div>
 
           <div className="mt-6 space-y-4">
-            {[
-              ["Storyboard_Review_03.pdf", "14 hours left", "bg-error"],
-              ["Investor_Demo_Audio.wav", "22 hours left", "bg-warning"],
-              ["Launch_Selects_Press.zip", "2 days left", "bg-primary"],
-            ].map(([name, countdown, tone]) => (
+            {teamFiles
+              .slice()
+              .sort((a, b) => a.daysRemaining - b.daysRemaining)
+              .slice(0, 3)
+              .map((file) => {
+                const tone =
+                  file.daysRemaining <= 1
+                    ? "bg-error"
+                    : file.daysRemaining <= 2
+                      ? "bg-warning"
+                      : "bg-primary";
+                const countdown =
+                  file.daysRemaining === 0
+                    ? "Under 24 hours left"
+                    : `${file.daysRemaining} day${file.daysRemaining > 1 ? "s" : ""} left`;
+                return (
               <div key={name} className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold text-foreground">{name}</p>
+                    <p className="text-sm font-semibold text-foreground">{file.name}</p>
                     <p className="mt-1 text-xs text-muted-foreground">Auto-delete enabled</p>
                   </div>
                   <div className="text-right">
@@ -214,7 +227,8 @@ export function DashboardOverview() {
                   </div>
                 </div>
               </div>
-            ))}
+                );
+              })}
           </div>
         </div>
       </section>
@@ -222,7 +236,13 @@ export function DashboardOverview() {
       <section className="fc-card">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+              <svg aria-hidden="true" className="h-3.5 w-3.5" viewBox="0 0 20 20">
+                <path
+                  d="M4.5 4.25A1.75 1.75 0 0 0 2.75 6v8A1.75 1.75 0 0 0 4.5 15.75h11A1.75 1.75 0 0 0 17.25 14V6A1.75 1.75 0 0 0 15.5 4.25h-11Zm1 2.75h9v6h-9v-6Z"
+                  fill="currentColor"
+                />
+              </svg>
               Recent Uploads
             </p>
             <h2 className="mt-2 text-xl font-semibold text-foreground">Fresh activity across the team</h2>
@@ -230,9 +250,15 @@ export function DashboardOverview() {
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-muted-foreground">
               <span className="h-2 w-2 rounded-full bg-success" />
-              2 uploads live
+              {uploadsInProgressCount} uploads live
             </span>
-            <Link className="fc-button-secondary h-10 px-4" href="/upload">
+            <Link className="fc-button-secondary inline-flex h-10 items-center gap-2 px-4" href="/upload">
+              <svg aria-hidden="true" className="h-4 w-4" viewBox="0 0 20 20">
+                <path
+                  d="M10 3.25a.75.75 0 0 1 .75.75v7.19l2.22-2.22a.75.75 0 1 1 1.06 1.06l-3.5 3.5a.75.75 0 0 1-1.06 0l-3.5-3.5a.75.75 0 0 1 1.06-1.06l2.22 2.22V4a.75.75 0 0 1 .75-.75Z"
+                  fill="currentColor"
+                />
+              </svg>
               Upload file
             </Link>
           </div>
@@ -248,7 +274,7 @@ export function DashboardOverview() {
           </div>
 
           <div className="divide-y divide-border">
-            {uploads.map((upload) => (
+            {recentUploads.map((upload) => (
               <div
                 key={upload.name}
                 className="grid gap-4 px-5 py-4 transition-colors hover:bg-muted/50 md:grid-cols-[minmax(0,1.3fr)_120px_140px_120px_150px] md:items-center"
@@ -343,4 +369,3 @@ export function DashboardOverviewSkeleton() {
     </div>
   );
 }
-import Link from "next/link";

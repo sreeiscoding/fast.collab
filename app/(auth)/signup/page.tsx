@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import {
   AuthAlert,
   AuthDivider,
@@ -8,9 +12,35 @@ import {
 } from "@/src/components/auth/auth-shell";
 
 export default function SignupPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(
+    "Your first workspace can be ready before your magic link even leaves the inbox.",
+  );
+
+  function handleSignupSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setStatusMessage("Workspace created. Redirecting you to FastCollab...");
+
+    window.setTimeout(() => {
+      router.push("/dashboard");
+    }, 900);
+  }
+
+  function handleGoogleSignup() {
+    setIsGoogleLoading(true);
+    setStatusMessage("Connecting your Google account and creating your workspace...");
+
+    window.setTimeout(() => {
+      router.push("/dashboard");
+    }, 900);
+  }
+
   return (
     <AuthShell
-      description="Create your FastCollab account in seconds and invite your team when you&apos;re in."
+      description="Create your FastCollab account in seconds and invite your team when you're in."
       eyebrow="Signup"
       footerLinkHref="/login"
       footerLinkLabel="Sign in instead"
@@ -20,10 +50,10 @@ export default function SignupPage() {
       <div className="space-y-5">
         <AuthAlert
           title="Fast onboarding"
-          description="Your first workspace can be ready before your magic link even leaves the inbox."
+          description={statusMessage}
         />
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSignupSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground" htmlFor="full-name">
               Full name
@@ -52,12 +82,22 @@ export default function SignupPage() {
             />
           </div>
 
-          <AuthSubmitButton label="Create account with magic link" loadingLabel="Creating account..." />
+          <AuthSubmitButton
+            disabled={isSubmitting || isGoogleLoading}
+            label="Create account with magic link"
+            loading={isSubmitting}
+            loadingLabel="Creating account..."
+          />
         </form>
 
         <AuthDivider />
 
-        <SocialButton label="Sign up with Google" />
+        <SocialButton
+          disabled={isSubmitting || isGoogleLoading}
+          label="Sign up with Google"
+          loading={isGoogleLoading}
+          onClick={handleGoogleSignup}
+        />
 
         <div className="rounded-2xl border border-border bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">Example success state</p>

@@ -1,4 +1,8 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, type FormEvent } from "react";
 import {
   AuthAlert,
   AuthDivider,
@@ -8,6 +12,32 @@ import {
 } from "@/src/components/auth/auth-shell";
 
 export default function LoginPage() {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState(
+    "Enter your work email and we will send a secure sign-in link instantly.",
+  );
+
+  function handleMagicLinkSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setStatusMessage("Magic link sent. Redirecting you to the workspace preview...");
+
+    window.setTimeout(() => {
+      router.push("/dashboard");
+    }, 900);
+  }
+
+  function handleGoogleLogin() {
+    setIsGoogleLoading(true);
+    setStatusMessage("Connecting your Google account...");
+
+    window.setTimeout(() => {
+      router.push("/dashboard");
+    }, 900);
+  }
+
   return (
     <AuthShell
       description="Use your email for a secure magic link or continue with Google. No password required."
@@ -20,10 +50,10 @@ export default function LoginPage() {
       <div className="space-y-5">
         <AuthAlert
           title="Minimal friction by design"
-          description="Enter your work email and we’ll send a secure sign-in link instantly."
+          description={statusMessage}
         />
 
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleMagicLinkSubmit}>
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground" htmlFor="email">
               Work email
@@ -38,12 +68,21 @@ export default function LoginPage() {
             />
           </div>
 
-          <AuthSubmitButton label="Send magic link" />
+          <AuthSubmitButton
+            disabled={isSubmitting || isGoogleLoading}
+            label="Send magic link"
+            loading={isSubmitting}
+          />
         </form>
 
         <AuthDivider />
 
-        <SocialButton label="Continue with Google" />
+        <SocialButton
+          disabled={isSubmitting || isGoogleLoading}
+          label="Continue with Google"
+          loading={isGoogleLoading}
+          onClick={handleGoogleLogin}
+        />
 
         <div className="rounded-2xl border border-border bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">Example error state</p>
