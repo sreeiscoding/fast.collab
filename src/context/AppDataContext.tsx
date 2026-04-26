@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
-type TeamId = "team-1" | "team-2" | "team-3";
+type TeamId = string;
 type MemberRole = "Owner" | "Editor" | "Viewer";
 type MemberStatus = "Active" | "Invited";
 type UploadState = "idle" | "uploading" | "success" | "error";
@@ -346,18 +346,16 @@ function initialsFromName(name: string) {
 }
 
 export function AppDataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<AppDataSnapshot>(initialData);
-
-  useEffect(() => {
+  const [data, setData] = useState<AppDataSnapshot>(() => {
+    if (typeof window === "undefined") return initialData;
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
+    if (!raw) return initialData;
     try {
-      const parsed = JSON.parse(raw) as AppDataSnapshot;
-      setData(parsed);
+      return JSON.parse(raw) as AppDataSnapshot;
     } catch {
-      setData(initialData);
+      return initialData;
     }
-  }, []);
+  });
 
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -496,4 +494,3 @@ export function useAppData() {
   }
   return context;
 }
-

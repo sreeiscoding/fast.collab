@@ -96,11 +96,11 @@ export default function LoginPage() {
 
         <p className="text-center text-xs leading-6 text-muted-foreground sm:text-left">
           By continuing, you agree to FastCollab&apos;s{" "}
-          <Link className="text-foreground underline decoration-border-strong underline-offset-4" href="/">
+          <Link className="text-foreground underline decoration-border-strong underline-offset-4" href="/terms">
             Terms
           </Link>{" "}
           and{" "}
-          <Link className="text-foreground underline decoration-border-strong underline-offset-4" href="/">
+          <Link className="text-foreground underline decoration-border-strong underline-offset-4" href="/privacy">
             Privacy Policy
           </Link>
           .

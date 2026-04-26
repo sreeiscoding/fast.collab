@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { useMemo } from "react";
 import { useAppData } from "@/src/context/AppDataContext";
@@ -109,7 +111,7 @@ export function DashboardOverview() {
 
           <div className="space-y-3">
             {teamNotifications.slice(0, 3).map((item) => (
-              <div key={item} className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
+              <div key={item.id} className="rounded-2xl bg-muted/70 px-4 py-3 text-sm text-muted-foreground">
                 {item.title}
               </div>
             ))}
@@ -215,18 +217,18 @@ export function DashboardOverview() {
                     ? "Under 24 hours left"
                     : `${file.daysRemaining} day${file.daysRemaining > 1 ? "s" : ""} left`;
                 return (
-              <div key={name} className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{file.name}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">Auto-delete enabled</p>
+                  <div key={file.id} className="rounded-2xl border border-border bg-surface px-4 py-4 shadow-soft">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{file.name}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">Auto-delete enabled</p>
+                      </div>
+                      <div className="text-right">
+                        <div className={`ml-auto h-2.5 w-2.5 rounded-full ${tone}`} />
+                        <p className="mt-2 text-sm font-medium text-foreground">{countdown}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <div className={`ml-auto h-2.5 w-2.5 rounded-full ${tone}`} />
-                    <p className="mt-2 text-sm font-medium text-foreground">{countdown}</p>
-                  </div>
-                </div>
-              </div>
                 );
               })}
           </div>

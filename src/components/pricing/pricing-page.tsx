@@ -391,7 +391,7 @@ export function PricingPage() {
                 className={`mt-8 w-full ${
                   plan.featured ? "fc-button-primary" : "fc-button-secondary"
                 }`}
-                href={plan.name === "Team" ? "/login" : "/signup"}
+                href={plan.name === "Team" ? "/contact" : "/signup"}
               >
                 {plan.cta}
               </Link>
@@ -454,7 +454,7 @@ export function PricingPage() {
               <Link className="fc-button-primary h-12 px-6" href="/signup">
                 Start Free
               </Link>
-              <Link className="fc-button-secondary h-12 px-6" href="/login">
+              <Link className="fc-button-secondary h-12 px-6" href="/contact">
                 Talk to Sales
               </Link>
             </div>

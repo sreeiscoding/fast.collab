@@ -4,105 +4,11 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTeam } from "@/src/context/TeamContext";
 import { SelectDrawer } from "../ui/SelectDrawer";
+import { useAppData, type AppFile } from "@/src/context/AppDataContext";
 
 type ViewMode = "grid" | "list";
 type FileTypeFilter = "all" | "video" | "image" | "archive";
 type SortKey = "recent" | "size" | "expiry";
-
-type FileItem = {
-  id: string;
-  name: string;
-  size: string;
-  uploader: string;
-  uploaderInitials: string;
-  expiry: string;
-  daysRemaining: number;
-  type: FileTypeFilter;
-  thumbTone: string;
-  format: string;
-  teamId: string;
-};
-
-const files: FileItem[] = [
-  {
-    id: "campaign-master",
-    name: "Campaign_Master_v12.mp4",
-    size: "4.8 GB",
-    uploader: "Maya Chen",
-    uploaderInitials: "MC",
-    expiry: "Expires in 5 days",
-    daysRemaining: 5,
-    type: "video",
-    thumbTone: "from-primary-subtle to-accent-subtle",
-    format: "4K Video",
-    teamId: "team-1",
-  },
-  {
-    id: "launch-selects",
-    name: "Launch_Selects_Press.zip",
-    size: "1.3 GB",
-    uploader: "Jordan Rivera",
-    uploaderInitials: "JR",
-    expiry: "Expires in 2 days",
-    daysRemaining: 2,
-    type: "archive",
-    thumbTone: "from-warning-subtle to-surface",
-    format: "Archive",
-    teamId: "team-2",
-  },
-  {
-    id: "hero-stills",
-    name: "Hero_Stills_Final_Selects.png",
-    size: "248 MB",
-    uploader: "Amina Yusuf",
-    uploaderInitials: "AY",
-    expiry: "Expires in 6 days",
-    daysRemaining: 6,
-    type: "image",
-    thumbTone: "from-accent-subtle to-primary-subtle",
-    format: "Image Pack",
-    teamId: "team-1",
-  },
-  {
-    id: "storyboard-review",
-    name: "Storyboard_Review_03.pdf",
-    size: "42 MB",
-    uploader: "Maya Chen",
-    uploaderInitials: "MC",
-    expiry: "Expires in 14 hours",
-    daysRemaining: 0,
-    type: "image",
-    thumbTone: "from-error-subtle to-surface",
-    format: "Review Doc",
-    teamId: "team-1",
-  },
-  {
-    id: "demo-cut",
-    name: "Investor_Demo_Cutdown.mov",
-    size: "2.1 GB",
-    uploader: "Jordan Rivera",
-    uploaderInitials: "JR",
-    expiry: "Expires in 3 days",
-    daysRemaining: 3,
-    type: "video",
-    thumbTone: "from-primary-subtle to-surface",
-    format: "Video Draft",
-    teamId: "team-2",
-  },
-  {
-    id: "raw-sync",
-    name: "Raw_Footage_Selects_AudioSync.mp4",
-    size: "8.2 GB",
-    uploader: "Noah Ellis",
-    uploaderInitials: "NE",
-    expiry: "Expires in 7 days",
-    daysRemaining: 7,
-    type: "video",
-    thumbTone: "from-secondary-subtle to-accent-subtle",
-    format: "Raw Video",
-    teamId: "team-3",
-  },
-];
 
 function parseSizeToMb(size: string) {
   const [value, unit] = size.split(" ");
@@ -113,6 +19,7 @@ function parseSizeToMb(size: string) {
 
 export function FileBrowser() {
   const { activeTeamId } = useTeam();
+  const { files: appFiles } = useAppData();
   const [view, setView] = useState<ViewMode>("grid");
   const [filter, setFilter] = useState<FileTypeFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("recent");
@@ -135,7 +42,7 @@ export function FileBrowser() {
     );
   }
 
-  function handleDownload(file: FileItem) {
+  function handleDownload(file: AppFile) {
     const manifest = [
       "FastCollab export preview",
       `File: ${file.name}`,
@@ -160,7 +67,7 @@ export function FileBrowser() {
   }
 
   const visibleFiles = useMemo(() => {
-    let result = files.filter((file) => file.teamId === activeTeamId);
+    let result = appFiles.filter((file) => file.teamId === activeTeamId);
     result = filter === "all" ? result : result.filter((file) => file.type === filter);
 
     // Apply search filter
@@ -180,20 +87,20 @@ export function FileBrowser() {
     });
 
     return result;
-  }, [filter, sortKey, searchQuery, activeTeamId]);
+  }, [filter, sortKey, searchQuery, activeTeamId, appFiles]);
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
     
     const query = searchQuery.toLowerCase();
-    return files
+    return appFiles
       .filter((file) => file.teamId === activeTeamId)
       .filter(
         (file) =>
           file.name.toLowerCase().includes(query) ||
           file.uploader.toLowerCase().includes(query)
       );
-  }, [searchQuery, activeTeamId]);
+  }, [searchQuery, activeTeamId, appFiles]);
 
   return (
     <div className="space-y-6 lg:space-y-8">
@@ -235,7 +142,7 @@ export function FileBrowser() {
                 </svg>
                 Total files
               </p>
-              <p className="mt-3 text-3xl font-semibold text-foreground">{files.filter(f => f.teamId === activeTeamId).length}</p>
+              <p className="mt-3 text-3xl font-semibold text-foreground">{appFiles.filter((file) => file.teamId === activeTeamId).length}</p>
             </div>
             <div className="rounded-2xl border border-border bg-surface p-4 shadow-soft">
               <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
@@ -248,7 +155,7 @@ export function FileBrowser() {
                 Expiring soon
               </p>
               <p className="mt-3 text-3xl font-semibold text-warning">
-                {files.filter((file) => file.teamId === activeTeamId && file.daysRemaining <= 2).length}
+                {appFiles.filter((file) => file.teamId === activeTeamId && file.daysRemaining <= 2).length}
               </p>
             </div>
             <div className="rounded-2xl border border-border bg-surface p-4 shadow-soft">
@@ -261,7 +168,7 @@ export function FileBrowser() {
                 </svg>
                 Ready to download
               </p>
-              <p className="mt-3 text-3xl font-semibold text-success">{files.filter(f => f.teamId === activeTeamId).length}</p>
+              <p className="mt-3 text-3xl font-semibold text-success">{appFiles.filter((file) => file.teamId === activeTeamId).length}</p>
             </div>
           </div>
         </div>
@@ -363,7 +270,7 @@ export function FileBrowser() {
           <div className="mt-4 rounded-2xl border border-success/20 bg-success-subtle px-4 py-3 text-sm text-success">
             Download manifest prepared for{" "}
             <span className="font-semibold">
-              {files.find((file) => file.id === downloadedFileId)?.name}
+              {appFiles.find((file) => file.id === downloadedFileId)?.name}
             </span>
             .
           </div>

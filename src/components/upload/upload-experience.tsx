@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAppData } from "@/src/context/AppDataContext";
+import { useTeam } from "@/src/context/TeamContext";
 
 type UploadState = "idle" | "uploading" | "success" | "error";
 
@@ -76,31 +78,23 @@ type UploadSurfaceProps = {
 };
 
 function UploadSurface({ compact = false, onClose }: UploadSurfaceProps) {
+  const { activeTeamId } = useTeam();
+  const { addUpload, uploads } = useAppData();
   const [dragging, setDragging] = useState(false);
-  const [uploads, setUploads] = useState(initialUploads);
 
   const activeUpload = useMemo(
-    () => uploads.find((item) => item.status === "uploading") ?? uploads[0],
-    [uploads],
+    () =>
+      uploads.find((item) => item.teamId === activeTeamId && item.status === "uploading")
+      ?? uploads.find((item) => item.teamId === activeTeamId)
+      ?? initialUploads[0],
+    [activeTeamId, uploads],
   );
 
   function addDemoUpload() {
-    setUploads((current) => [
-      {
-        id: `new-${current.length + 1}`,
-        name: "Fresh_Upload_Demo_Sequence.mp4",
-        type: "Video / MP4",
-        size: "6.4 GB",
-        duration: "05:21",
-        resolution: "3840 x 2160",
-        status: "uploading",
-        progress: 12,
-        speed: "9.8 MB/s",
-        estimate: "8m 42s remaining",
-      },
-      ...current,
-    ]);
+    addUpload(activeTeamId);
   }
+
+  const teamUploads = uploads.filter((item) => item.teamId === activeTeamId);
 
   return (
     <div
@@ -244,7 +238,7 @@ function UploadSurface({ compact = false, onClose }: UploadSurfaceProps) {
             </div>
 
             <div className="mt-5 space-y-4">
-              {uploads.map((upload) => (
+              {teamUploads.map((upload) => (
                 <div
                   key={upload.id}
                   className="rounded-2xl border border-border bg-canvas p-4 shadow-soft transition-all duration-200 hover:-translate-y-0.5 hover:border-border-strong"

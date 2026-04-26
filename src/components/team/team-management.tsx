@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useAppData } from "@/src/context/AppDataContext";
+import { useTeam } from "@/src/context/TeamContext";
 
 type TeamMember = {
   id: string;
@@ -11,45 +13,6 @@ type TeamMember = {
   initials: string;
   lastActive: string;
 };
-
-const initialMembers: TeamMember[] = [
-  {
-    id: "maya-chen",
-    name: "Maya Chen",
-    email: "maya@fastcollab.com",
-    role: "Owner",
-    status: "Active",
-    initials: "MC",
-    lastActive: "Online now",
-  },
-  {
-    id: "jordan-rivera",
-    name: "Jordan Rivera",
-    email: "jordan@fastcollab.com",
-    role: "Editor",
-    status: "Active",
-    initials: "JR",
-    lastActive: "8 mins ago",
-  },
-  {
-    id: "amina-yusuf",
-    name: "Amina Yusuf",
-    email: "amina@fastcollab.com",
-    role: "Editor",
-    status: "Active",
-    initials: "AY",
-    lastActive: "23 mins ago",
-  },
-  {
-    id: "noah-ellis",
-    name: "Noah Ellis",
-    email: "noah@clientco.com",
-    role: "Viewer",
-    status: "Invited",
-    initials: "NE",
-    lastActive: "Invite pending",
-  },
-];
 
 const roles: TeamMember["role"][] = ["Owner", "Editor", "Viewer"];
 
@@ -64,7 +27,9 @@ type RolePickerTarget =
   | { scope: "member"; memberId: string };
 
 export function TeamManagement() {
-  const [members, setMembers] = useState(initialMembers);
+  const { activeTeamId } = useTeam();
+  const { inviteMember, members: allMembers, removeMember, updateMemberRole } = useAppData();
+  const members = allMembers.filter((member) => member.teamId === activeTeamId);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamMember["role"]>("Viewer");
@@ -82,15 +47,13 @@ export function TeamManagement() {
   const inviteDisabled = inviteEmail.trim().length === 0;
 
   function handleRoleChange(memberId: string, role: TeamMember["role"]) {
-    setMembers((current) =>
-      current.map((member) => (member.id === memberId ? { ...member, role } : member)),
-    );
+    updateMemberRole(activeTeamId, memberId, role);
     const memberName = members.find((member) => member.id === memberId)?.name ?? "Member";
     setStatusMessage(`${memberName} role updated to ${role}.`);
   }
 
   function handleRemove(memberId: string) {
-    setMembers((current) => current.filter((member) => member.id !== memberId));
+    removeMember(activeTeamId, memberId);
     setStatusMessage("Member access removed.");
   }
 
@@ -98,26 +61,7 @@ export function TeamManagement() {
     if (!inviteEmail.trim()) return;
 
     const email = inviteEmail.trim();
-    const name = email.split("@")[0].replace(/[._-]+/g, " ");
-    const initials = name
-      .split(" ")
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join("");
-
-    setMembers((current) => [
-      {
-        id: email.toLowerCase(),
-        name: name.replace(/\b\w/g, (char) => char.toUpperCase()),
-        email,
-        role: inviteRole,
-        status: "Invited",
-        initials: initials || "TM",
-        lastActive: "Invite sent now",
-      },
-      ...current,
-    ]);
+    inviteMember(activeTeamId, email, inviteRole);
 
     setInviteEmail("");
     setInviteRole("Viewer");

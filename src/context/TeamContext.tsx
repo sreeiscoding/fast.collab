@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 export type Team = {
   id: string;
@@ -24,7 +24,14 @@ const teams: Team[] = [
 ];
 
 export function TeamProvider({ children }: { children: ReactNode }) {
-  const [activeTeamId, setActiveTeamId] = useState("team-1");
+  const [activeTeamId, setActiveTeamId] = useState(() => {
+    if (typeof window === "undefined") return "team-1";
+    return window.localStorage.getItem("fastcollab-active-team") ?? "team-1";
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem("fastcollab-active-team", activeTeamId);
+  }, [activeTeamId]);
 
   return (
     <TeamContext.Provider value={{ activeTeamId, setActiveTeamId, teams }}>

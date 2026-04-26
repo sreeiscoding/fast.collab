@@ -1,15 +1,17 @@
+"use client";
+
 import {
   DashboardMobileStrip,
   DashboardShell,
 } from "@/src/components/dashboard/dashboard-shell";
 import Link from "next/link";
+import { useAppData } from "@/src/context/AppDataContext";
+import { useTeam } from "@/src/context/TeamContext";
 
 export default function ProjectsPage() {
-  const projects = [
-    { name: "Spring Campaign Launch", team: "Marketing Studio", status: "Live", route: "/files" },
-    { name: "Investor Demo Edit", team: "Product Ops", status: "Reviewing", route: "/upload" },
-    { name: "Client Review Package", team: "External Share", status: "Shared", route: "/team" },
-  ];
+  const { projects } = useAppData();
+  const { activeTeamId } = useTeam();
+  const teamProjects = projects.filter((project) => project.teamId === activeTeamId);
 
   return (
     <DashboardShell>
@@ -33,8 +35,8 @@ export default function ProjectsPage() {
         </section>
 
         <section className="grid gap-5 xl:grid-cols-3">
-          {projects.map((project) => (
-            <div key={project.name} className="fc-card fc-interactive-surface">
+          {teamProjects.map((project) => (
+            <div key={project.id} className="fc-card fc-interactive-surface">
               <p className="text-sm font-semibold text-foreground">{project.name}</p>
               <p className="mt-2 text-sm text-muted-foreground">{project.team}</p>
               <span className="fc-badge-success mt-4 inline-flex">{project.status}</span>

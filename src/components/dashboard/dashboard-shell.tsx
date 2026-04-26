@@ -5,20 +5,10 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useTeam } from "@/src/context/TeamContext";
+import { useAppData } from "@/src/context/AppDataContext";
 
 type DashboardShellProps = {
   children: ReactNode;
-};
-
-type NotificationItem = {
-  id: string;
-  title: string;
-  detail: string;
-  time: string;
-  tone: "default" | "warning" | "success";
-  read: boolean;
-  href: string;
-  teamId: string;
 };
 
 const sidebarLinks = [
@@ -29,89 +19,6 @@ const sidebarLinks = [
   { label: "Team", href: "/team", icon: "team" },
   { label: "Billing", href: "/pricing", icon: "billing" },
   { label: "Settings", href: "/settings", icon: "settings" },
-];
-
-const teamOptions = [
-  { id: "team-1", name: "Studio Team", meta: "9 active collaborators" },
-  { id: "team-2", name: "Northwind Ops", meta: "5 active collaborators" },
-  { id: "team-3", name: "Client Review", meta: "3 active collaborators" },
-];
-
-const searchableItems = [
-  { id: "proj-1", type: "project", name: "Q4 Product Launch", meta: "5 team members", teamId: "team-1" },
-  { id: "proj-2", type: "project", name: "Client Website Redesign", meta: "3 team members", teamId: "team-2" },
-  { id: "proj-3", type: "project", name: "Internal Review Campaign", meta: "2 team members", teamId: "team-3" },
-  { id: "upload-1", type: "upload", name: "Campaign_Master_v12.mp4", meta: "uploaded by Maya Chen", teamId: "team-1" },
-  { id: "upload-2", type: "upload", name: "Launch_Selects_Press.zip", meta: "uploaded by Jordan Rivera", teamId: "team-2" },
-  { id: "upload-3", type: "upload", name: "Hero_Stills_Final_Selects.png", meta: "uploaded by Amina Yusuf", teamId: "team-1" },
-  { id: "upload-4", type: "upload", name: "Q4_Strategic_Plan.pdf", meta: "uploaded by Noah Ellis", teamId: "team-3" },
-  { id: "teammate-1", type: "teammate", name: "Maya Chen", meta: "Designer", teamId: "team-1" },
-  { id: "teammate-2", type: "teammate", name: "Jordan Rivera", meta: "Project Manager", teamId: "team-2" },
-  { id: "teammate-3", type: "teammate", name: "Amina Yusuf", meta: "Lead Developer", teamId: "team-1" },
-  { id: "teammate-4", type: "teammate", name: "Noah Ellis", meta: "QA Engineer", teamId: "team-3" },
-];
-
-const initialNotifications: NotificationItem[] = [
-  {
-    id: "upload-1",
-    title: "Amina uploaded Product_Reel.mp4",
-    detail: "Upload completed and ready to share with the client team.",
-    time: "2 mins ago",
-    tone: "success",
-    read: false,
-    href: "/files",
-    teamId: "team-1",
-  },
-  {
-    id: "expiry-1",
-    title: "Launch_Selects_Press.zip expires in 2 days",
-    detail: "Consider extending expiry if external stakeholders still need access.",
-    time: "17 mins ago",
-    tone: "warning",
-    read: false,
-    href: "/files",
-    teamId: "team-2",
-  },
-  {
-    id: "invite-1",
-    title: "Jordan invited Noah Ellis to Studio Team",
-    detail: "Pending invite sent to noah@clientco.com.",
-    time: "1 hour ago",
-    tone: "default",
-    read: true,
-    href: "/team",
-    teamId: "team-1",
-  },
-  {
-    id: "project-1",
-    title: "Spring Campaign Launch reached 78% complete",
-    detail: "Recent upload batch pushed project progress forward.",
-    time: "3 hours ago",
-    tone: "default",
-    read: true,
-    href: "/projects",
-    teamId: "team-1",
-  },
-  {
-    id: "upload-2",
-    title: "Strategic Plan doc shared in Northwind Ops",
-    detail: "Noah Ellis shared Q4_Strategic_Plan.pdf with the team.",
-    time: "5 hours ago",
-    tone: "success",
-    read: true,
-    href: "/files",
-    teamId: "team-2",
-  },
-  {
-    id: "project-2",
-    title: "Client Review project approved",
-    detail: "All stakeholders have signed off on the final deliverables.",
-    time: "1 day ago",
-    tone: "success",
-    read: true,
-    href: "/projects",
-    teamId: "team-3",
-  },
 ];
 
 type IconName = (typeof sidebarLinks)[number]["icon"];
@@ -196,10 +103,18 @@ function NavIcon({ className, name }: { className?: string; name: IconName }) {
 export function DashboardShell({ children }: DashboardShellProps) {
   const pathname = usePathname();
   const { activeTeamId, setActiveTeamId, teams } = useTeam();
+  const {
+    files,
+    members,
+    notifications,
+    projects,
+    toggleNotificationRead,
+    uploads,
+    markAllNotificationsRead,
+  } = useAppData();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
-  const [notifications, setNotifications] = useState(initialNotifications);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchActive, setIsSearchActive] = useState(false);
 
@@ -218,29 +133,47 @@ export function DashboardShell({ children }: DashboardShellProps) {
     if (!searchQuery.trim()) return [];
     
     const query = searchQuery.toLowerCase();
-    return searchableItems
-      .filter((item) => item.teamId === activeTeamId)
-      .filter((item) =>
+    const searchableItems = [
+      ...projects
+        .filter((project) => project.teamId === activeTeamId)
+        .map((project) => ({
+          id: project.id,
+          type: "project",
+          name: project.name,
+          meta: `${project.progress}% complete`,
+        })),
+      ...uploads
+        .filter((upload) => upload.teamId === activeTeamId)
+        .map((upload) => ({
+          id: upload.id,
+          type: "upload",
+          name: upload.name,
+          meta: upload.speed,
+        })),
+      ...files
+        .filter((file) => file.teamId === activeTeamId)
+        .map((file) => ({
+          id: file.id,
+          type: "upload",
+          name: file.name,
+          meta: `by ${file.uploader}`,
+        })),
+      ...members
+        .filter((member) => member.teamId === activeTeamId)
+        .map((member) => ({
+          id: member.id,
+          type: "teammate",
+          name: member.name,
+          meta: member.role,
+        })),
+    ];
+
+    return searchableItems.filter(
+      (item) =>
         item.name.toLowerCase().includes(query) ||
-        item.meta.toLowerCase().includes(query)
-      );
-  }, [searchQuery, activeTeamId]);
-
-  function handleMarkAllRead() {
-    setNotifications((current) =>
-      current.map((notification) => ({ ...notification, read: true })),
+        item.meta.toLowerCase().includes(query),
     );
-  }
-
-  function handleToggleRead(id: string) {
-    setNotifications((current) =>
-      current.map((notification) =>
-        notification.id === id
-          ? { ...notification, read: !notification.read }
-          : notification,
-      ),
-    );
-  }
+  }, [activeTeamId, files, members, projects, searchQuery, uploads]);
 
   useEffect(() => {
     if (!notificationsOpen && !mobileNavOpen) return;
@@ -360,7 +293,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                   </button>
                   <button
                     className="fc-button-ghost ml-auto h-9 px-3 text-xs"
-                    onClick={handleMarkAllRead}
+                    onClick={() => markAllNotificationsRead(activeTeamId)}
                     type="button"
                   >
                     Mark all as read
@@ -402,7 +335,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
                       <div className="flex items-center gap-2">
                         <button
                           className="fc-button-ghost h-8 px-3 text-xs"
-                          onClick={() => handleToggleRead(item.id)}
+                          onClick={() => toggleNotificationRead(item.id)}
                           type="button"
                         >
                           {item.read ? "Mark unread" : "Mark read"}
